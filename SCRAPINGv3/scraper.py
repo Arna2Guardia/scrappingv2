@@ -162,6 +162,10 @@ for idChaussure in idChaussures:
       interesting = element['market']['bidAskData']
       prixBas = interesting['highestBid']
       taille = interesting['highestBidSize']
+      if str(taille)[-1] == 'Y':
+        taille = str(taille)[0:len(taille) - 1]
+      if str(taille)[-1] == 'W':
+        taille = str(taille)[0:len(taille) - 1]
       if interesting['lowestAsk'] == 'None':
           prixHaut = prixBas
       else:
@@ -173,15 +177,17 @@ for idChaussure in idChaussures:
       # print('Le prix max est de ' + str(prixHaut) + "$.")
       # print('Et le prix le plus bas de ' + str(prixBas) + "$.")
       # print('Il y a actuellement ' + str(nbDemande) + ' demandes pour cette taille et ce modèle.\n')
-      time.sleep(0.8)
+      time.sleep(1.2)
       print("Tout va bien")
     allInfo.append(obj)
     cpt+=1
     print(cpt)
-    if cpt == 20:
-      break
+    # if cpt == 12:
+    #   break
     print("petite pause")
-    time.sleep(20)
+    time.sleep(10)
+
+  
   
 
 rows = []
