@@ -9,13 +9,15 @@ baseUrl = 'https://stockx.com'
 uri = '/fr-fr/sneakers?page='
 
 headers = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/12.0",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36",
     "Accept-Encoding": "gzip, deflate",
-    "Accept-Language": "en-US,en;q=0.8",
-    "Accept": "text/html",
+    "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+    "Accept": "application/json",
     "Referer": "https://stockx.com/",
     "Origin": "https://stockx.com",
     "Connection": "keep-alive",
+    "sec-fetch-site": "none",
+    "sec-fetch-mode": "navigate",
     "Cache-Control": "no-cache"
 }
 
@@ -177,7 +179,7 @@ for idChaussure in idChaussures:
       # print('Le prix max est de ' + str(prixHaut) + "$.")
       # print('Et le prix le plus bas de ' + str(prixBas) + "$.")
       # print('Il y a actuellement ' + str(nbDemande) + ' demandes pour cette taille et ce modèle.\n')
-      time.sleep(1.2)
+      time.sleep(0.8)
       print("Tout va bien")
     allInfo.append(obj)
     cpt+=1
