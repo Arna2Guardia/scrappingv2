@@ -28,9 +28,9 @@ def getPages(url, nbPages):
         linkPages.append(url + "page-" + str(i))
     return linkPages
 
-#print(getPages(baseUrl + uri,50))
+# print(getPages(baseUrl + uri,51))
 
-def getEndpoints(soup,url):
+def getPageEndpoints(soup,url):
     table = soup.find("table", {"class":"summonerRankingsTable"})
     trs = table.findAll("tr")
     endpoints = []
@@ -42,7 +42,23 @@ def getEndpoints(soup,url):
             pass
     return endpoints
 
-#print(getEndpoints(soup,baseUrl))
+def allEndPoints(url,pages):
+    endPoints = []
+    for page in pages:
+        response = requests.get(page, headers=headers)  
+        soup = bs4.BeautifulSoup(response.text,'html.parser')  
+        endPoints += getPageEndpoints(soup,url)  
+    return endPoints
+
+
+pages = getPages(baseUrl + uri, 51)
+response = requests.get(baseUrl + uri, headers=headers)
+soup = bs4.BeautifulSoup(response.text, 'html.parser')
+endPoints = allEndPoints(baseUrl, pages)
+#print(endPoints)
+
+
+
 
 
 
@@ -74,13 +90,13 @@ def fileWriter(file, fieldnames, data):
             writer.writerow(endpoint)
             cpt += 1 
 
-fieldnames = ["ID", "Links"]  
-data_links = [{"Links": links} for links in getEndpoints(soup, baseUrl)] 
-fileWriter("test_links.csv", fieldnames, data_links)
+# fieldnames = ["ID", "Links"]  
+# data_links = [{"Links": links} for links in allEndPoints(baseUrl,getPages(baseUrl + uri, 51))] 
+# fileWriter("test_links.csv", fieldnames, data_links)
 
 
 def getInfoByPage(soup):
-    name = soup.find("title").contents[0].replace(" (EUW) - LeagueOfGraphs",'')
+    name = soup.find("title").contents[0].replace(" - LeagueOfGraphs",'')
     print(name)
     sumRanking = soup.find("div",{"class":"summoner-rankings"})
     if sumRanking is not None:
@@ -93,15 +109,15 @@ def getInfoByPage(soup):
             regionalRank = soloq.find("a", {"class":"regionalRank"}).contents[0].strip()
             nbWins = soloq.find("span", {"class":"winsNumber"}).contents[0].strip()
             nbLoses = soloq.find("span", {"class":"lossesNumber"}).contents[0].strip()
-            print(soloqRank)
-            print(nbLps)
-            print(worldRank)
-            print(regionalRank)
-            print("Wins:", nbWins + ' | ' + "Losses:",nbLoses)
+            # print(soloqRank)
+            # print(nbLps)
+            # print(worldRank)
+            # print(regionalRank)
+            # print("Wins:", nbWins + ' | ' + "Losses:",nbLoses)
 
         if flexq is not None:
             flexqRank = flexq.find("div",{"class":"leagueTier"}).contents[0].strip()
-            print(flexqRank)
+            # print(flexqRank)
 
     champsGrid = soup.find("table",{"class":"sortable_table"})
     champs = champsGrid.findAll("tr")
@@ -119,9 +135,9 @@ def getInfoByPage(soup):
             if champRegionalRank is not None:
                 champRegionalRank = champRegionalRank.contents[0].strip()
             kda = [champColumn.find("span",{"class":"kills"}).contents[0].strip(),champColumn.find("span",{"class":"deaths"}).contents[0].strip(),champColumn.find("span",{"class":"assists"}).contents[0].strip()]
-            print(champName)
-            print("World Rank:",champGlobalRank,"Regional Rank:",champRegionalRank)
-            print("K/D/A:",kda)
+            # print(champName)
+            # print("World Rank:",champGlobalRank,"Regional Rank:",champRegionalRank)
+            # print("K/D/A:",kda)
 
             if games is not None:
                 gamesP = games.find("progressbar")
@@ -135,9 +151,9 @@ def getInfoByPage(soup):
                     winrateOnChamp = champWr["data-value"]
                     if len(winrateOnChamp) > 4:
                         winrateOnChamp = winrateOnChamp[0:4]
-                    print("Winrate on " + champName + ": " + winrateOnChamp  + " for : " + gamesPlayed + " game(s) played")
+                    # print("Winrate on " + champName + ": " + winrateOnChamp  + " for : " + gamesPlayed + " game(s) played")
                 else:
-                    print("Winrate on " + champName + " not found.")
+                     print("Winrate on " + champName + " not found.")
             champInfos.append([champName,champGlobalRank,champRegionalRank,kda,gamesPlayed,winrateOnChamp])
 
     rolesGrid = soup.find("div",{"id":"profileRoles"})
@@ -152,7 +168,7 @@ def getInfoByPage(soup):
                 winrateRole = role.findAll("td")[2]['data-sort-value']
                 if len(winrateRole) > 4:
                     winrateRole = winrateRole[0:4]
-                print(playerRole + ":", gamesPlayedRole + "game(s) played, ", winrateRole)
+                # print(playerRole + ":", gamesPlayedRole + "game(s) played, ", winrateRole)
                 cpt = cpt + 1
                 rolesInfo.append([playerRole,gamesPlayedRole,winrateRole])
             except:
@@ -174,13 +190,29 @@ def getInfoByPage(soup):
         "Champions Info": champInfos,
         "Roles Info": rolesInfo
         }
-    print(player)
+    # print(player)
     return player
 
 
+allData = []
+j = 0
+for i in endPoints:
+    # if j > 5:
+    #     break
+    # else:
+        if i is not "https://www.leagueofgraphs.com/rankings/summoners":
+            try:
+                response2 = requests.get(i,headers=headers)
+                soup2 = bs4.BeautifulSoup(response2.text,'html.parser')
+                allData.append(getInfoByPage(soup2))
+                j = j + 1
+            except:
+                print("Error on:", i)
+print("Done")
+print(allData)
 
+fieldnames2 = ["ID","Name", "Rank SoloQ","LP SoloQ","World Ranking","Regional Ranking","Wins","Losses","Rank FlexQ","Champions Info","Roles Info"]  
+data_links2 = [{"Name": name} for name in allData] 
+fileWriter("INFO_PLAYER.csv", fieldnames2, data_links2)
+    
 
-response2 = requests.get("https://www.leagueofgraphs.com/summoner/euw/Agurin",headers=headers)
-print(response2)
-soup2 = bs4.BeautifulSoup(response2.text,'html.parser')
-getInfoByPage(soup2)
